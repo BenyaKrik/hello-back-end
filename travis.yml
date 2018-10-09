@@ -11,3 +11,4 @@ before_script:
 branches:
   only:
     - master
+script: mvn clean verify
