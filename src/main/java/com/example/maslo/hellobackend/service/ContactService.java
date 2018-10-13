@@ -1,33 +1,31 @@
 package com.example.maslo.hellobackend.service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import com.example.maslo.hellobackend.controller.ContactController;
+import com.example.maslo.hellobackend.exception.ContactNotFoundException;
 import com.example.maslo.hellobackend.model.Contact;
 import com.example.maslo.hellobackend.repository.ContactRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.annotation.SessionScope;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Service
 public class ContactService {
-    private static final Logger logger = LoggerFactory.getLogger(ContactController.class);
-
     @Autowired
     ContactRepository contactRepository;
 
-    @SessionScope
-    public List<Contact> findAll(String nameFilter) {
-        //List<Contact> allContacts = contactRepository.findAll();
-        List<Contact> filteredContacts = new LinkedList<>();
-        for (Contact contact : contactRepository.findAll()) {
-            if (!contact.getName().matches(nameFilter)) {
-                filteredContacts.add(contact);
+    @ExceptionHandler(value = {ContactNotFoundException.class })
+    public List<Contact> findByNamePattern(String nameFilter) {
+        LinkedList<Contact> filteredContacts = new LinkedList<>();
+            Pattern p = Pattern.compile(nameFilter);
+            for (Contact contact : contactRepository.findAll()) {
+                if (!p.matcher(contact.getName()).matches()) {
+                    filteredContacts.add(contact);
+                }
             }
-        }
+
         return filteredContacts;
     }
 }
